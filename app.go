@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log/slog"
 	"os"
 	"time"
@@ -58,7 +57,6 @@ func Run() {
 		colLayout := qt.NewQVBoxLayout2()
 		colLayout.SetSpacing(8)
 		price := cache.Prices[asset.ID]
-		priceStr := fmt.Sprintf("%.*f", asset.Digits, price)
 		{
 			label := qt.NewQLabel3(asset.Name)
 			label.SetAlignment(qt.AlignCenter)
@@ -68,7 +66,7 @@ func Run() {
 		}
 		rootLayout.AddSpacing(10)
 		{
-			label := qt.NewQLabel3(priceStr)
+			label := qt.NewQLabel3(asset.FormatPrice(price))
 			label.SetAlignment(qt.AlignCenter)
 			label.SetFont(font)
 			label.SetStyleSheet("color: white;")
@@ -91,7 +89,7 @@ func Run() {
 		for _, asset := range assets {
 			if price, ok := prices[asset.ID]; ok {
 				label := priceLabels[asset.ID]
-				label.SetText(fmt.Sprintf("%.*f", asset.Digits, price))
+				label.SetText(asset.FormatPrice(price))
 			}
 		}
 		return true
