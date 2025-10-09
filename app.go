@@ -16,10 +16,10 @@ func Run() {
 
 	assets := conf.Assets
 
-	cache, err := loadPriceCache()
+	cryptoCache, err := loadCryptoPriceCache()
 	if err != nil {
 		slog.Error("error loading price cache", "err", err)
-		cache = &PriceCache{Prices: map[string]float64{}}
+		cryptoCache = &CryptoPriceCache{Prices: map[string]float64{}}
 	}
 
 	// Create frameless black window
@@ -40,14 +40,14 @@ func Run() {
 	refreshInterval := time.Duration(conf.RefreshIntervalSeconds) * time.Second
 
 	now := time.Now()
-	if now.Sub(cache.LastFetch) > refreshInterval {
+	if now.Sub(cryptoCache.LastFetch) > refreshInterval {
 		prices, err := fetchCryptoPrices(assets)
 		if err != nil {
 			slog.Error("failed to fetch, using cached data", "err", err)
 		}
-		cache.Prices = prices
-		cache.LastFetch = now
-		saveCache(cache)
+		cryptoCache.Prices = prices
+		cryptoCache.LastFetch = now
+		saveCryptoCache(cryptoCache)
 	}
 
 	font := qt.NewQFont()
@@ -59,7 +59,7 @@ func Run() {
 	for _, asset := range assets {
 		colLayout := qt.NewQVBoxLayout2()
 		colLayout.SetSpacing(8)
-		price := cache.Prices[asset.ID]
+		price := cryptoCache.Prices[asset.ID]
 		{
 			label := qt.NewQLabel3(asset.Name)
 			label.SetAlignment(qt.AlignCenter)
@@ -86,9 +86,9 @@ func Run() {
 			slog.Error("error fetching", "err", err)
 			return false
 		}
-		cache.Prices = prices
-		cache.LastFetch = time.Now()
-		saveCache(cache)
+		cryptoCache.Prices = prices
+		cryptoCache.LastFetch = time.Now()
+		saveCryptoCache(cryptoCache)
 		for _, asset := range assets {
 			if price, ok := prices[asset.ID]; ok {
 				label := priceLabels[asset.ID]
@@ -100,7 +100,7 @@ func Run() {
 
 	go func() {
 		now := time.Now()
-		lastTime := cache.LastFetch.Truncate(time.Minute)
+		lastTime := cryptoCache.LastFetch.Truncate(time.Minute)
 		sleepDuration := lastTime.Add(refreshInterval).Sub(now)
 		slog.Info("sleeping", "duration", sleepDuration, "last_time", lastTime, "now", now)
 		time.Sleep(sleepDuration)

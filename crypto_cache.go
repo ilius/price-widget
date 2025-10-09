@@ -6,24 +6,24 @@ import (
 	"time"
 )
 
-type PriceCache struct {
+type CryptoPriceCache struct {
 	LastFetch time.Time          `json:"timestamp"`
 	Prices    map[string]float64 `json:"prices"`
 }
 
-func loadPriceCache() (*PriceCache, error) {
+func loadCryptoPriceCache() (*CryptoPriceCache, error) {
 	b, err := os.ReadFile(priceCacheFile)
 	if err != nil {
 		return nil, err
 	}
-	c := &PriceCache{}
+	c := &CryptoPriceCache{}
 	if err := json.Unmarshal(b, c); err != nil {
 		return nil, err
 	}
 	return c, nil
 }
 
-func saveCache(data *PriceCache) error {
+func saveCryptoCache(data *CryptoPriceCache) error {
 	b, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		return err
