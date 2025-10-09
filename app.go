@@ -25,7 +25,8 @@ func Run() {
 
 	// Create frameless black window
 	window := qt.NewQWidget2()
-	window.SetWindowFlags(qt.FramelessWindowHint | qt.Window)
+	window.SetWindowFlags(qt.FramelessWindowHint | qt.Tool | qt.WindowStaysOnBottomHint)
+
 	window.SetStyleSheet("background-color: black;")
 
 	// Layout setup
