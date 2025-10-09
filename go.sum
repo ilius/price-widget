@@ -1,2 +1,4 @@
 github.com/mappu/miqt v0.11.2 h1:erXnheYNbWh9a7QGNzfVDENlkuwiSw0VJH7Rw6uXBLs=
 github.com/mappu/miqt v0.11.2/go.mod h1:xFg7ADaO1QSkmXPsPODoKe/bydJpRG9fgCYyIDl/h1U=
+github.com/pelletier/go-toml/v2 v2.2.4 h1:mye9XuhQ6gvn5h28+VilKrrPoQVanw5PMw/TB0t5Ec4=
+github.com/pelletier/go-toml/v2 v2.2.4/go.mod h1:2gIqNv+qfxSVS7cM2xJQKtLSTLUE9V8t9Stt+h56mCY=
