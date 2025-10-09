@@ -13,7 +13,7 @@ func Run() {
 	qt.NewQApplication(os.Args)
 
 	conf := loadConfig()
-	slog.Info("Using config", "spacing", conf.Spacing, "text_size", conf.TextSize)
+	slog.Info("Using config", "conf", conf)
 
 	assets := conf.Assets
 

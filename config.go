@@ -17,7 +17,6 @@ var (
 
 // TOML config structure
 type Config struct {
-	Spacing  float32 `toml:"spacing"`
 	TextSize float32 `toml:"text_size"`
 
 	RefreshIntervalSeconds int `toml:"refresh_interval_seconds"`
@@ -27,7 +26,6 @@ type Config struct {
 
 func loadConfig() *Config {
 	conf := &Config{
-		Spacing:                30,
 		TextSize:               24,
 		RefreshIntervalSeconds: 15 * 60,
 		Assets:                 []*Asset{},
