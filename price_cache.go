@@ -7,7 +7,7 @@ import (
 )
 
 type PriceCache struct {
-	Timestamp time.Time          `json:"timestamp"`
+	LastFetch time.Time          `json:"timestamp"`
 	Prices    map[string]float64 `json:"prices"`
 }
 

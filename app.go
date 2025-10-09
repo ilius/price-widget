@@ -36,14 +36,14 @@ func Run() {
 	refreshInterval := time.Duration(conf.RefreshIntervalSeconds) * time.Second
 
 	now := time.Now()
-	if now.Sub(cache.Timestamp) > refreshInterval {
+	if now.Sub(cache.LastFetch) > refreshInterval {
 		prices, err := fetchCryptoPrices(assets)
 		if err != nil {
 			slog.Error("failed to fetch, using cached data", "err", err)
 
 		}
 		cache.Prices = prices
-		cache.Timestamp = now
+		cache.LastFetch = now
 		saveCache(cache)
 	}
 
@@ -71,24 +71,34 @@ func Run() {
 		rootLayout.AddStretch()
 	}
 
+	fetch := func() bool {
+		prices, err := fetchCryptoPrices(assets)
+		if err != nil {
+			slog.Error("error fetching", "err", err)
+			return false
+		}
+		cache.Prices = prices
+		cache.LastFetch = time.Now()
+		saveCache(cache)
+		for _, asset := range assets {
+			if price, ok := prices[asset.ID]; ok {
+				label := priceLabels[asset.ID]
+				label.SetText(fmt.Sprintf("%.*f", asset.Digits, price))
+			}
+		}
+		return true
+	}
+
 	go func() {
+		now := time.Now()
+		lastTime := cache.LastFetch.Truncate(time.Minute)
+		sleepDuration := lastTime.Add(refreshInterval).Sub(now)
+		slog.Info("sleeping", "duration", sleepDuration, "last_time", lastTime, "now", now)
+		time.Sleep(sleepDuration)
 		ticker := time.NewTicker(refreshInterval)
 		for {
+			fetch()
 			<-ticker.C
-			prices, err := fetchCryptoPrices(assets)
-			if err != nil {
-				slog.Error("error fetching", "err", err)
-				continue
-			}
-			cache.Prices = prices
-			cache.Timestamp = time.Now()
-			saveCache(cache)
-			for _, asset := range assets {
-				if price, ok := prices[asset.ID]; ok {
-					label := priceLabels[asset.ID]
-					label.SetText(fmt.Sprintf("%.*f", asset.Digits, price))
-				}
-			}
 		}
 	}()
 
