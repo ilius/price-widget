@@ -1,13 +1,24 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/dustin/go-humanize"
+)
 
 type Asset struct {
-	Name   string `toml:"name"`
-	ID     string `toml:"id"`
-	Digits int    `toml:"digits"`
+	Name string `toml:"name"`
+	ID   string `toml:"id"`
+
+	Digits int `toml:"digits"`
+
+	HumanizeFormat string `toml:"humanize_format"` // go-humanize format, used if digits < 0
+
 }
 
 func (a *Asset) FormatPrice(price float64) string {
+	if a.Digits < 0 {
+		return humanize.FormatFloat(a.HumanizeFormat, price)
+	}
 	return fmt.Sprintf("%.*f", a.Digits, price)
 }
