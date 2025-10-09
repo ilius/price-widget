@@ -20,6 +20,7 @@ func Run() {
 	cache, err := loadPriceCache()
 	if err != nil {
 		slog.Error("error loading price cache", "err", err)
+		cache = &PriceCache{Prices: map[string]float64{}}
 	}
 
 	// Create frameless black window
@@ -32,47 +33,25 @@ func Run() {
 	rootLayout.SetSpacing(30)
 	rootLayout.SetContentsMargins(20, 20, 20, 20)
 
-	now := time.Now()
-	var prices map[string]float64
-
 	refreshInterval := time.Duration(conf.RefreshIntervalSeconds) * time.Second
 
-	if cache != nil && now.Sub(cache.Timestamp) < refreshInterval {
-		prices = cache.Prices
-	} else {
-		p, err := fetchCryptoPrices(assets)
-		if err == nil {
-			prices = p
-			saveCache(&PriceCache{Timestamp: now, Prices: prices})
-		} else if cache != nil {
+	now := time.Now()
+	if now.Sub(cache.Timestamp) > refreshInterval {
+		prices, err := fetchCryptoPrices(assets)
+		if err != nil {
 			slog.Error("failed to fetch, using cached data", "err", err)
-			prices = cache.Prices
+
 		}
+		cache.Prices = prices
+		cache.Timestamp = now
+		saveCache(cache)
 	}
 
-	go func() {
-		for {
-			time.Sleep(refreshInterval)
-			p, err := fetchCryptoPrices(assets)
-			if err != nil {
-				slog.Error("error fetching", "err", err)
-				continue
-			}
-			saveCache(&PriceCache{Timestamp: time.Now(), Prices: p})
-			// for _, asset := range assets {
-			// 	if v, ok := p[asset.ID]; ok {
-			// 		label := labels[asset.ID]
-			// 		label.Text = fmt.Sprintf("%.*f", asset.Digits, v)
-			// 		label.Refresh()
-			// 	}
-			// }
-		}
-	}()
-
+	priceLabels := map[string]*qt.QLabel{}
 	for _, asset := range assets {
 		colLayout := qt.NewQVBoxLayout2()
 		colLayout.SetSpacing(8)
-		price := prices[asset.ID]
+		price := cache.Prices[asset.ID]
 		priceStr := fmt.Sprintf("%.*f", asset.Digits, price)
 		{
 			label := qt.NewQLabel3(asset.Name)
@@ -86,10 +65,32 @@ func Run() {
 			label.SetAlignment(qt.AlignCenter)
 			label.SetStyleSheet("color: white; font-size: 22px;")
 			colLayout.AddWidget(label.QWidget)
+			priceLabels[asset.ID] = label
 		}
 		rootLayout.AddLayout(colLayout.QLayout)
 		rootLayout.AddStretch()
 	}
+
+	go func() {
+		ticker := time.NewTicker(refreshInterval)
+		for {
+			<-ticker.C
+			prices, err := fetchCryptoPrices(assets)
+			if err != nil {
+				slog.Error("error fetching", "err", err)
+				continue
+			}
+			cache.Prices = prices
+			cache.Timestamp = time.Now()
+			saveCache(cache)
+			for _, asset := range assets {
+				if price, ok := prices[asset.ID]; ok {
+					label := priceLabels[asset.ID]
+					label.SetText(fmt.Sprintf("%.*f", asset.Digits, price))
+				}
+			}
+		}
+	}()
 
 	window.SetLayout(rootLayout.QLayout)
 	window.Resize(len(assets)*100, 1)
