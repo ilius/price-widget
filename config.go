@@ -17,7 +17,7 @@ var (
 
 // TOML config structure
 type Config struct {
-	TextSize float32 `toml:"text_size"`
+	TextSize int `toml:"text_size"`
 
 	RefreshIntervalSeconds int `toml:"refresh_interval_seconds"`
 

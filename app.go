@@ -47,6 +47,11 @@ func Run() {
 		saveCache(cache)
 	}
 
+	font := qt.NewQFont()
+	if conf.TextSize > 0 {
+		font.SetPixelSize(conf.TextSize)
+	}
+
 	priceLabels := map[string]*qt.QLabel{}
 	for _, asset := range assets {
 		colLayout := qt.NewQVBoxLayout2()
@@ -56,14 +61,16 @@ func Run() {
 		{
 			label := qt.NewQLabel3(asset.Name)
 			label.SetAlignment(qt.AlignCenter)
-			label.SetStyleSheet("color: white; font-size: 22px;")
+			label.SetFont(font)
+			label.SetStyleSheet("color: white;")
 			colLayout.AddWidget(label.QWidget)
 		}
 		rootLayout.AddSpacing(10)
 		{
 			label := qt.NewQLabel3(priceStr)
 			label.SetAlignment(qt.AlignCenter)
-			label.SetStyleSheet("color: white; font-size: 22px;")
+			label.SetFont(font)
+			label.SetStyleSheet("color: white;")
 			colLayout.AddWidget(label.QWidget)
 			priceLabels[asset.ID] = label
 		}
