@@ -24,7 +24,11 @@ func Run() {
 
 	// Create frameless black window
 	window := qt.NewQWidget2()
-	window.SetWindowFlags(qt.FramelessWindowHint | qt.Tool | qt.WindowStaysOnBottomHint)
+	flag := qt.FramelessWindowHint | qt.Tool | qt.WindowStaysOnBottomHint
+	if conf.BypassWindowManager {
+		flag |= qt.BypassWindowManagerHint
+	}
+	window.SetWindowFlags(flag)
 
 	window.SetStyleSheet("background-color: black;")
 
@@ -40,7 +44,6 @@ func Run() {
 		prices, err := fetchCryptoPrices(assets)
 		if err != nil {
 			slog.Error("failed to fetch, using cached data", "err", err)
-
 		}
 		cache.Prices = prices
 		cache.LastFetch = now
@@ -126,7 +129,6 @@ func Run() {
 				event.GlobalY()-dragRelativePos.Y(),
 			)
 		}
-
 	})
 	window.Show()
 	qt.QApplication_Exec()

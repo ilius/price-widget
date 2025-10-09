@@ -21,6 +21,8 @@ type Config struct {
 
 	RefreshIntervalSeconds int `toml:"refresh_interval_seconds"`
 
+	BypassWindowManager bool `toml:"bypass_window_manager"`
+
 	Assets []*Asset `toml:"assets"`
 }
 

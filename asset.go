@@ -13,7 +13,6 @@ type Asset struct {
 	Digits int `toml:"digits"`
 
 	HumanizeFormat string `toml:"humanize_format"` // go-humanize format, used if digits < 0
-
 }
 
 func (a *Asset) FormatPrice(price float64) string {
