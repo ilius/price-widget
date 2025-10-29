@@ -116,19 +116,31 @@ func Run() {
 
 	// --- Make it draggable ---
 	var dragRelativePos *qt.QPoint
+
 	window.OnMousePressEvent(func(super func(event *qt.QMouseEvent), event *qt.QMouseEvent) {
-		if event.Button() == qt.LeftButton {
-			dragRelativePos = event.Pos()
+		// Note: event.Buttons() == event.Button()
+		// slog.Info("OnMousePressEvent", "button", event.Button(), "buttons", event.Buttons())
+		switch event.Button() {
+		case qt.LeftButton, qt.MiddleButton:
+			if os.Getenv("WAYLAND_DISPLAY") != "" {
+				window.WindowHandle().StartSystemMove()
+			} else {
+				dragRelativePos = event.Pos()
+			}
 		}
 	})
-
 	window.OnMouseMoveEvent(func(super func(event *qt.QMouseEvent), event *qt.QMouseEvent) {
-		if event.Buttons()&qt.LeftButton != 0 {
+		// Note: event.Button() is 0, but event.Buttons() is set (1 for left only).
+		// slog.Info("OnMouseMoveEvent", "button", event.Button(), "buttons", event.Buttons())
+		if dragRelativePos != nil {
 			window.Move(
 				event.GlobalX()-dragRelativePos.X(),
 				event.GlobalY()-dragRelativePos.Y(),
 			)
 		}
+	})
+	window.OnMouseReleaseEvent(func(super func(event *qt.QMouseEvent), event *qt.QMouseEvent) {
+		dragRelativePos = nil
 	})
 	window.Show()
 	qt.QApplication_Exec()
