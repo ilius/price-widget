@@ -1,1 +1,6 @@
-CGO_ENABLED=1 go build
+#!/bin/bash
+
+export GOMAXPROCS=4
+export CGO_ENABLED=1
+
+go build -ldflags '-s -w' -trimpath
