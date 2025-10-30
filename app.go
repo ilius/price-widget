@@ -8,6 +8,8 @@ import (
 	qt "github.com/mappu/miqt/qt6"
 )
 
+const letfOrMiddleButton = qt.LeftButton | qt.MiddleButton
+
 func Run() {
 	qt.NewQApplication(os.Args)
 
@@ -120,8 +122,7 @@ func Run() {
 	window.OnMousePressEvent(func(super func(event *qt.QMouseEvent), event *qt.QMouseEvent) {
 		// Note: event.Buttons() == event.Button()
 		// slog.Info("OnMousePressEvent", "button", event.Button(), "buttons", event.Buttons())
-		switch event.Button() {
-		case qt.LeftButton, qt.MiddleButton:
+		if event.Buttons()&letfOrMiddleButton > 0 {
 			if os.Getenv("WAYLAND_DISPLAY") != "" {
 				window.WindowHandle().StartSystemMove()
 			} else {
@@ -132,7 +133,7 @@ func Run() {
 	window.OnMouseMoveEvent(func(super func(event *qt.QMouseEvent), event *qt.QMouseEvent) {
 		// Note: event.Button() is 0, but event.Buttons() is set (1 for left only).
 		// slog.Info("OnMouseMoveEvent", "button", event.Button(), "buttons", event.Buttons())
-		if dragRelativePos != nil {
+		if dragRelativePos != nil && event.Buttons()&letfOrMiddleButton > 0 {
 			window.Move(
 				event.GlobalX()-dragRelativePos.X(),
 				event.GlobalY()-dragRelativePos.Y(),
