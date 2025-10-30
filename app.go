@@ -119,6 +119,35 @@ func Run() {
 	// --- Make it draggable ---
 	var dragRelativePos *qt.QPoint
 
+	exit := func() {
+		// app.onExit()
+		os.Exit(0)
+	}
+
+	actions := []*qt.QAction{}
+	{
+		action := qt.NewQAction2("Quit")
+		action.OnTriggered(exit)
+		actions = append(actions, action)
+	}
+	{
+		action := qt.NewQAction2("About")
+		action.OnTriggered(func() {
+			widget := qt.NewQDialog(window)
+			aboutClickedWidget(widget.QWidget, nil)
+			widget.Show()
+		})
+		actions = append(actions, action)
+	}
+	popupMenu := func(event *qt.QMouseEvent) {
+		menu := qt.NewQMenu2()
+		for _, action := range actions {
+			menu.AddAction(action)
+		}
+		// menu.SetFont(app.systemDefaultFont)
+		menu.Popup(event.GlobalPos())
+	}
+
 	window.OnMousePressEvent(func(super func(event *qt.QMouseEvent), event *qt.QMouseEvent) {
 		// Note: event.Buttons() == event.Button()
 		// slog.Info("OnMousePressEvent", "button", event.Button(), "buttons", event.Buttons())
@@ -128,6 +157,8 @@ func Run() {
 			} else {
 				dragRelativePos = event.Pos()
 			}
+		} else if event.Buttons()&qt.RightButton > 0 {
+			popupMenu(event)
 		}
 	})
 	window.OnMouseMoveEvent(func(super func(event *qt.QMouseEvent), event *qt.QMouseEvent) {
