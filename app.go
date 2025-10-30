@@ -131,6 +131,13 @@ func Run() {
 		actions = append(actions, action)
 	}
 	{
+		action := qt.NewQAction2("Config")
+		action.OnTriggered(func() {
+			openConfig(conf)
+		})
+		actions = append(actions, action)
+	}
+	{
 		action := qt.NewQAction2("About")
 		action.OnTriggered(func() {
 			widget := qt.NewQDialog(window)
