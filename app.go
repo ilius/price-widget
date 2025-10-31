@@ -162,7 +162,7 @@ func Run() {
 			if os.Getenv("WAYLAND_DISPLAY") != "" {
 				window.WindowHandle().StartSystemMove()
 			} else {
-				dragRelativePos = event.Pos()
+				dragRelativePos = event.WindowPos().ToPoint()
 			}
 		} else if event.Buttons()&qt.RightButton > 0 {
 			popupMenu(event)
