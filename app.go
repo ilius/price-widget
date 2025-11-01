@@ -5,10 +5,18 @@ import (
 	"os"
 	"time"
 
+	"github.com/ilius/price-widget/pkg/providers"
+	"github.com/ilius/price-widget/pkg/providers/coingecko"
 	qt "github.com/mappu/miqt/qt6"
 )
 
 const letfOrMiddleButton = qt.LeftButton | qt.MiddleButton
+
+var cryptoProvider providers.Provider
+
+func init() {
+	cryptoProvider = coingecko.New()
+}
 
 func Run() {
 	qt.NewQApplication(os.Args)
@@ -42,8 +50,9 @@ func Run() {
 	refreshInterval := time.Duration(conf.RefreshIntervalSeconds) * time.Second
 
 	now := time.Now()
+
 	if now.Sub(cryptoCache.LastFetch) > refreshInterval {
-		prices, err := fetchCryptoPrices(assets)
+		prices, err := cryptoProvider.FetchPrices(assets)
 		if err != nil {
 			slog.Error("failed to fetch, using cached data", "err", err)
 		}
@@ -83,7 +92,7 @@ func Run() {
 	}
 
 	fetch := func() bool {
-		prices, err := fetchCryptoPrices(assets)
+		prices, err := cryptoProvider.FetchPrices(assets)
 		if err != nil {
 			slog.Error("error fetching", "err", err)
 			return false

@@ -1,4 +1,4 @@
-package main
+package coingecko
 
 import (
 	"encoding/json"
@@ -10,7 +10,13 @@ import (
 	"github.com/ilius/price-widget/pkg/asset"
 )
 
-func fetchCryptoPrices(assets []*asset.Asset) (map[string]float64, error) {
+func New() *provider {
+	return &provider{}
+}
+
+type provider struct{}
+
+func (*provider) FetchPrices(assets []*asset.Asset) (map[string]float64, error) {
 	slog.Info("fetching prices...")
 
 	url := fmt.Sprintf("https://api.coingecko.com/api/v3/simple/price?ids=%s&vs_currencies=usd", idsToCSV(assets))
