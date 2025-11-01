@@ -6,6 +6,14 @@ import (
 	"github.com/dustin/go-humanize"
 )
 
+func IdMap(assets []*Asset) map[string]struct{} {
+	m := map[string]struct{}{}
+	for _, a := range assets {
+		m[a.ID] = struct{}{}
+	}
+	return m
+}
+
 type Asset struct {
 	Name   string `toml:"name"`
 	ID     string `toml:"id"`
