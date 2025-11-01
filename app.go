@@ -20,11 +20,11 @@ func Run() {
 	conf := config.Load()
 	slog.Info("Using config", "conf", conf)
 
-	assets := conf.Assets
+	allAssets := conf.Assets
 
 	cryptoAssets := []*asset.Asset{}
 	metalAssets := []*asset.Asset{}
-	for _, asset := range assets {
+	for _, asset := range allAssets {
 		switch asset.Type {
 		case "metal", "gold", "goldprice":
 			metalAssets = append(metalAssets, asset)
@@ -74,7 +74,7 @@ func Run() {
 	}
 
 	priceLabels := map[string]*qt.QLabel{}
-	for _, asset := range assets {
+	for _, asset := range allAssets {
 		colLayout := qt.NewQVBoxLayout2()
 		colLayout.SetSpacing(8)
 		price, _ := getPrice(asset)
@@ -107,7 +107,7 @@ func Run() {
 	go metalManager.FetchLoop(showPrice)
 
 	window.SetLayout(rootLayout.QLayout)
-	window.Resize(len(assets)*100, 1)
+	window.Resize(len(allAssets)*100, 1)
 
 	// --- Make it draggable ---
 	var dragRelativePos *qt.QPoint
