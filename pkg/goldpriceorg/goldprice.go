@@ -23,10 +23,26 @@ const troyOunceToKg = 0.0311035
 const goldApiUrl = "https://data-asg.goldprice.org/dbXRates/USD"
 
 type goldApiResponseItem struct {
-	Currency  string  `json:"curr"`     // "USD"
-	XAU_Ounce float64 `json:"xauPrice"` // Gold price per ounce
-	XAG_Ounce float64 `json:"xagPrice"` // Silver price per ounce
+	Currency    string  `json:"curr"`     // "USD"
+	GoldPrice   float64 `json:"xauPrice"` // Gold price per ounce
+	SilverPrice float64 `json:"xagPrice"` // Silver price per ounce
+
+	// GoldPriceClose   float64 `json:"xauClose"` // Gold price per ounce at the close of the previous trading session
+	// SilverPriceClose float64 `json:"xagClose"` // Silver price per ounce at the close of the previous trading session
 }
+
+// Example of all fields in goldApiResponseItem:
+// 		"chgXag": -0.1249,
+// 		"chgXau": 0.325,
+// 		"curr": "USD",
+// 		"pcXag": -0.2559,
+// 		"pcXau": 0.0081,
+// 		"xagClose": 48.80345,
+// 		"xagPrice": 48.6785,
+// 		"xauClose": 4002.605,
+// 		"xauPrice": 4002.93
+// chg (prefix): Absolute change in price
+// pc (prefix): Percent change in price
 
 type goldApiResponse struct {
 	Items []goldApiResponseItem `json:"items"`
@@ -64,9 +80,9 @@ func (*provider) FetchPrices(assets []*asset.Asset) (map[string]float64, error) 
 	}
 	// data.Items[0].Currency == "USD"
 
-	goldUsdOz := data.Items[0].XAU_Ounce       // USD per oz
+	goldUsdOz := data.Items[0].GoldPrice       // USD per oz
 	goldUsdKg := goldUsdOz / troyOunceToKg     // USD per kg
-	silverUsdOz := data.Items[0].XAG_Ounce     // USD per oz
+	silverUsdOz := data.Items[0].SilverPrice   // USD per oz
 	silverUsdKg := silverUsdOz / troyOunceToKg // USD per kg
 
 	return map[string]float64{
