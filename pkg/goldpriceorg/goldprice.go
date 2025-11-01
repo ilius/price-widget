@@ -54,6 +54,10 @@ func New() *provider {
 
 type provider struct{}
 
+func (*provider) Name() string {
+	return "goldprice"
+}
+
 func (*provider) SupportedIDs() map[string]struct{} {
 	return map[string]struct{}{
 		"gold":      {},

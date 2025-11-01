@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"log/slog"
@@ -12,11 +12,13 @@ import (
 
 // Config file paths
 var (
-	configDir            = filepath.Join(os.Getenv("HOME"), ".config", "price-widget")
-	cryptoPriceCacheFile = filepath.Join(configDir, "prices-crypto.json")
-	metalPriceCacheFile  = filepath.Join(configDir, "prices-metal.json")
-	configFile           = filepath.Join(configDir, "config.toml")
+	configDir  = filepath.Join(os.Getenv("HOME"), ".config", "price-widget")
+	configFile = filepath.Join(configDir, "config.toml")
 )
+
+func Dir() string {
+	return configDir
+}
 
 // TOML config structure
 type Config struct {
@@ -29,7 +31,7 @@ type Config struct {
 	Assets []*asset.Asset `toml:"assets"`
 }
 
-func loadConfig() *Config {
+func Load() *Config {
 	conf := &Config{
 		TextSize:               24,
 		RefreshIntervalSeconds: 15 * 60,
@@ -60,7 +62,7 @@ func loadConfig() *Config {
 	return conf
 }
 
-func saveConfig(conf *Config) error {
+func Save(conf *Config) error {
 	err := os.MkdirAll(configDir, 0o755)
 	if err != nil {
 		return err
@@ -79,7 +81,7 @@ func ensureConfigExists(conf *Config) bool {
 			slog.Error("error checking config file", "err", err)
 			return false
 		}
-		err := saveConfig(conf)
+		err := Save(conf)
 		if err != nil {
 			slog.Error("error saving config file", "err", err)
 			return false
@@ -93,7 +95,7 @@ func ensureConfigExists(conf *Config) bool {
 	return true
 }
 
-func openConfig(conf *Config) {
+func OpenInEditor(conf *Config) {
 	if !ensureConfigExists(conf) {
 		return
 	}

@@ -1,11 +1,13 @@
-package main
+package managers
 
 import (
 	"log/slog"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/ilius/price-widget/pkg/asset"
+	"github.com/ilius/price-widget/pkg/config"
 	"github.com/ilius/price-widget/pkg/pricecache"
 	"github.com/ilius/price-widget/pkg/providers"
 )
@@ -13,9 +15,9 @@ import (
 func NewManager(
 	provider providers.Provider,
 	assets []*asset.Asset,
-	cacheFile string,
 	refresh time.Duration,
 ) *Manager {
+	cacheFile := filepath.Join(config.Dir(), "prices-"+provider.Name()+".json")
 	return &Manager{
 		provider:  provider,
 		assets:    assets,

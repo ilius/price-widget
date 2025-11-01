@@ -6,26 +6,18 @@ import (
 	"time"
 
 	"github.com/ilius/price-widget/pkg/asset"
-	"github.com/ilius/price-widget/pkg/goldpriceorg"
-	"github.com/ilius/price-widget/pkg/providers"
-	"github.com/ilius/price-widget/pkg/providers/coingecko"
+	"github.com/ilius/price-widget/pkg/config"
+	"github.com/ilius/price-widget/pkg/managers/cryptomanager"
+	"github.com/ilius/price-widget/pkg/managers/metals"
 	qt "github.com/mappu/miqt/qt6"
 )
 
 const letfOrMiddleButton = qt.LeftButton | qt.MiddleButton
 
-var cryptoProvider providers.Provider
-var metalProvider providers.Provider
-
-func init() {
-	cryptoProvider = coingecko.New()
-	metalProvider = goldpriceorg.New()
-}
-
 func Run() {
 	qt.NewQApplication(os.Args)
 
-	conf := loadConfig()
+	conf := config.Load()
 	slog.Info("Using config", "conf", conf)
 
 	assets := conf.Assets
@@ -42,18 +34,8 @@ func Run() {
 	}
 	refreshInterval := time.Duration(conf.RefreshIntervalSeconds) * time.Second
 
-	cryptoManager := NewManager(
-		cryptoProvider,
-		cryptoAssets,
-		cryptoPriceCacheFile,
-		refreshInterval,
-	)
-	metalManager := NewManager(
-		metalProvider,
-		metalAssets,
-		metalPriceCacheFile,
-		refreshInterval,
-	)
+	cryptoManager := cryptomanager.New(cryptoAssets, refreshInterval)
+	metalManager := metals.New(metalAssets, refreshInterval)
 
 	getPrice := func(asset *asset.Asset) (float64, bool) {
 		price, ok := metalManager.GetPrice(asset)
@@ -144,7 +126,7 @@ func Run() {
 	{
 		action := qt.NewQAction2("Config")
 		action.OnTriggered(func() {
-			openConfig(conf)
+			config.OpenInEditor(conf)
 		})
 		actions = append(actions, action)
 	}

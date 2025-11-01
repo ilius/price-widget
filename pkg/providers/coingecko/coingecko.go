@@ -16,6 +16,10 @@ func New() *provider {
 
 type provider struct{}
 
+func (*provider) Name() string {
+	return "coingecko"
+}
+
 func (*provider) SupportedIDs() map[string]struct{} {
 	return nil
 }
