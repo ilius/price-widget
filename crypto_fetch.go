@@ -6,9 +6,11 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+
+	"github.com/ilius/price-widget/pkg/asset"
 )
 
-func fetchCryptoPrices(assets []*Asset) (map[string]float64, error) {
+func fetchCryptoPrices(assets []*asset.Asset) (map[string]float64, error) {
 	slog.Info("fetching prices...")
 
 	url := fmt.Sprintf("https://api.coingecko.com/api/v3/simple/price?ids=%s&vs_currencies=usd", idsToCSV(assets))
@@ -38,7 +40,7 @@ func fetchCryptoPrices(assets []*Asset) (map[string]float64, error) {
 	return prices, nil
 }
 
-func idsToCSV(assets []*Asset) string {
+func idsToCSV(assets []*asset.Asset) string {
 	out := ""
 	for i, asset := range assets {
 		if i > 0 {

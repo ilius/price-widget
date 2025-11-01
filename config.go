@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/ilius/price-widget/pkg/asset"
 	qt "github.com/mappu/miqt/qt6"
 	"github.com/pelletier/go-toml/v2"
 )
@@ -24,14 +25,14 @@ type Config struct {
 
 	BypassWindowManager bool `toml:"bypass_window_manager"`
 
-	Assets []*Asset `toml:"assets"`
+	Assets []*asset.Asset `toml:"assets"`
 }
 
 func loadConfig() *Config {
 	conf := &Config{
 		TextSize:               24,
 		RefreshIntervalSeconds: 15 * 60,
-		Assets: []*Asset{
+		Assets: []*asset.Asset{
 			{
 				Name:           "Bitcoin",
 				ID:             "bitcoin",
