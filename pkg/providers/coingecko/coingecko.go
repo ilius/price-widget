@@ -16,6 +16,10 @@ func New() *provider {
 
 type provider struct{}
 
+func (*provider) SupportedIDs() map[string]struct{} {
+	return nil
+}
+
 func (*provider) FetchPrices(assets []*asset.Asset) (map[string]float64, error) {
 	slog.Info("fetching prices...")
 
