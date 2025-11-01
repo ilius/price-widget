@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/ilius/price-widget/pkg/pricecache"
 	"github.com/ilius/price-widget/pkg/providers"
 	"github.com/ilius/price-widget/pkg/providers/coingecko"
 	qt "github.com/mappu/miqt/qt6"
@@ -26,10 +27,10 @@ func Run() {
 
 	assets := conf.Assets
 
-	cryptoCache, err := loadCryptoPriceCache()
+	cryptoCache := pricecache.New()
+	err := cryptoCache.Load(priceCacheFile)
 	if err != nil {
 		slog.Error("error loading price cache", "err", err)
-		cryptoCache = &CryptoPriceCache{Prices: map[string]float64{}}
 	}
 
 	// Create frameless black window
@@ -58,7 +59,7 @@ func Run() {
 		}
 		cryptoCache.Prices = prices
 		cryptoCache.LastFetch = now
-		saveCryptoCache(cryptoCache)
+		cryptoCache.Save(priceCacheFile)
 	}
 
 	font := qt.NewQFont()
@@ -99,7 +100,7 @@ func Run() {
 		}
 		cryptoCache.Prices = prices
 		cryptoCache.LastFetch = time.Now()
-		saveCryptoCache(cryptoCache)
+		cryptoCache.Save(priceCacheFile)
 		for _, asset := range assets {
 			if price, ok := prices[asset.ID]; ok {
 				label := priceLabels[asset.ID]
