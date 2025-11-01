@@ -12,9 +12,10 @@ import (
 
 // Config file paths
 var (
-	configDir      = filepath.Join(os.Getenv("HOME"), ".config", "price-widget")
-	priceCacheFile = filepath.Join(configDir, "prices.json")
-	configFile     = filepath.Join(configDir, "config.toml")
+	configDir            = filepath.Join(os.Getenv("HOME"), ".config", "price-widget")
+	cryptoPriceCacheFile = filepath.Join(configDir, "prices-crypto.json")
+	metalPriceCacheFile  = filepath.Join(configDir, "prices-metal.json")
+	configFile           = filepath.Join(configDir, "config.toml")
 )
 
 // TOML config structure

@@ -17,6 +17,7 @@ func IdMap(assets []*Asset) map[string]struct{} {
 type Asset struct {
 	Name   string `toml:"name"`
 	ID     string `toml:"id"`
+	Type   string `toml:"type"`
 	Prefix string `toml:"prefix"`
 	Suffix string `toml:"suffix"`
 

@@ -65,23 +65,16 @@ func (*provider) FetchPrices(assets []*asset.Asset) (map[string]float64, error) 
 	// data.Items[0].Currency == "USD"
 
 	goldUsdOz := data.Items[0].XAU_Ounce       // USD per oz
-	silverUsdOz := data.Items[0].XAG_Ounce     // USD per oz
 	goldUsdKg := goldUsdOz / troyOunceToKg     // USD per kg
+	silverUsdOz := data.Items[0].XAG_Ounce     // USD per oz
 	silverUsdKg := silverUsdOz / troyOunceToKg // USD per kg
 
-	prices := map[string]float64{}
-	for _, asset := range assets {
-		switch asset.ID {
-		case "gold", "gold_oz":
-			prices[asset.ID] = goldUsdOz
-		case "gold_kg":
-			prices[asset.ID] = goldUsdKg
-		case "silver", "silver_oz":
-			prices[asset.ID] = silverUsdOz
-		case "silver_kg":
-			prices[asset.ID] = silverUsdKg
-		}
-	}
-
-	return prices, nil
+	return map[string]float64{
+		"gold":      goldUsdOz,
+		"gold_oz":   goldUsdOz,
+		"gold_kg":   goldUsdKg,
+		"silver":    silverUsdOz,
+		"silver_oz": silverUsdOz,
+		"silver_kg": silverUsdKg,
+	}, nil
 }

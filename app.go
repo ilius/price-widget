@@ -5,7 +5,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/ilius/price-widget/pkg/pricecache"
+	"github.com/ilius/price-widget/pkg/asset"
+	"github.com/ilius/price-widget/pkg/goldpriceorg"
 	"github.com/ilius/price-widget/pkg/providers"
 	"github.com/ilius/price-widget/pkg/providers/coingecko"
 	qt "github.com/mappu/miqt/qt6"
@@ -14,9 +15,11 @@ import (
 const letfOrMiddleButton = qt.LeftButton | qt.MiddleButton
 
 var cryptoProvider providers.Provider
+var metalProvider providers.Provider
 
 func init() {
 	cryptoProvider = coingecko.New()
+	metalProvider = goldpriceorg.New()
 }
 
 func Run() {
@@ -27,10 +30,42 @@ func Run() {
 
 	assets := conf.Assets
 
-	cryptoCache := pricecache.New()
-	err := cryptoCache.Load(priceCacheFile)
-	if err != nil {
-		slog.Error("error loading price cache", "err", err)
+	cryptoAssets := []*asset.Asset{}
+	metalAssets := []*asset.Asset{}
+	for _, asset := range assets {
+		switch asset.Type {
+		case "metal", "gold", "goldprice":
+			metalAssets = append(metalAssets, asset)
+		case "", "coin", "crypto", "coingecko":
+			cryptoAssets = append(cryptoAssets, asset)
+		}
+	}
+	refreshInterval := time.Duration(conf.RefreshIntervalSeconds) * time.Second
+
+	cryptoManager := NewManager(
+		cryptoProvider,
+		cryptoAssets,
+		cryptoPriceCacheFile,
+		refreshInterval,
+	)
+	metalManager := NewManager(
+		metalProvider,
+		metalAssets,
+		metalPriceCacheFile,
+		refreshInterval,
+	)
+
+	getPrice := func(asset *asset.Asset) (float64, bool) {
+		price, ok := metalManager.GetPrice(asset)
+		if ok {
+			return price, true
+		}
+		price, ok = cryptoManager.GetPrice(asset)
+		if ok {
+			return price, true
+		}
+		slog.Error("asset not found", "id", asset.ID, "name", asset.Name)
+		return 0, false
 	}
 
 	// Create frameless black window
@@ -48,19 +83,8 @@ func Run() {
 	rootLayout.SetSpacing(30)
 	rootLayout.SetContentsMargins(20, 20, 20, 20)
 
-	refreshInterval := time.Duration(conf.RefreshIntervalSeconds) * time.Second
-
-	now := time.Now()
-
-	if now.Sub(cryptoCache.LastFetch) > refreshInterval {
-		prices, err := cryptoProvider.FetchPrices(assets)
-		if err != nil {
-			slog.Error("failed to fetch, using cached data", "err", err)
-		}
-		cryptoCache.Prices = prices
-		cryptoCache.LastFetch = now
-		cryptoCache.Save(priceCacheFile)
-	}
+	cryptoManager.Init()
+	metalManager.Init()
 
 	font := qt.NewQFont()
 	if conf.TextSize > 0 {
@@ -71,7 +95,7 @@ func Run() {
 	for _, asset := range assets {
 		colLayout := qt.NewQVBoxLayout2()
 		colLayout.SetSpacing(8)
-		price := cryptoCache.Prices[asset.ID]
+		price, _ := getPrice(asset)
 		{
 			label := qt.NewQLabel3(asset.Name)
 			label.SetAlignment(qt.AlignCenter)
@@ -92,36 +116,13 @@ func Run() {
 		rootLayout.AddStretch()
 	}
 
-	fetch := func() bool {
-		prices, err := cryptoProvider.FetchPrices(assets)
-		if err != nil {
-			slog.Error("error fetching", "err", err)
-			return false
-		}
-		cryptoCache.Prices = prices
-		cryptoCache.LastFetch = time.Now()
-		cryptoCache.Save(priceCacheFile)
-		for _, asset := range assets {
-			if price, ok := prices[asset.ID]; ok {
-				label := priceLabels[asset.ID]
-				label.SetText(asset.FormatPrice(price))
-			}
-		}
-		return true
+	showPrice := func(asset *asset.Asset, price float64) {
+		label := priceLabels[asset.ID]
+		label.SetText(asset.FormatPrice(price))
 	}
 
-	go func() {
-		now := time.Now()
-		lastTime := cryptoCache.LastFetch.Truncate(time.Minute)
-		sleepDuration := lastTime.Add(refreshInterval).Sub(now)
-		slog.Info("sleeping", "duration", sleepDuration, "last_time", lastTime, "now", now)
-		time.Sleep(sleepDuration)
-		ticker := time.NewTicker(refreshInterval)
-		for {
-			fetch()
-			<-ticker.C
-		}
-	}()
+	go cryptoManager.FetchLoop(showPrice)
+	go metalManager.FetchLoop(showPrice)
 
 	window.SetLayout(rootLayout.QLayout)
 	window.Resize(len(assets)*100, 1)
