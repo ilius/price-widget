@@ -84,37 +84,32 @@ func Run() {
 
 	priceLabels := map[string]*qt.QLabel{}
 
-	mainLayout := qt.NewQVBoxLayout2()
-	mainLayout.SetSpacing(30)
-	mainLayout.SetContentsMargins(20, 20, 20, 20)
+	mainLayout := qt.NewQGridLayout2()
+	mainLayout.SetSpacing(conf.GridSpacing)
+	{
+		m := conf.WindowMargins
+		mainLayout.SetContentsMargins(m, m, m, m)
+	}
 
-	for _, rowAssets := range assetsByRow(allAssets) {
-		rowLayout := qt.NewQHBoxLayout2()
-		rowLayout.SetSpacing(30)
-		rowLayout.SetContentsMargins(0, 0, 0, 0)
-		mainLayout.AddLayout(rowLayout.Layout())
-		for _, asset := range rowAssets {
-			colLayout := qt.NewQVBoxLayout2()
-			colLayout.SetSpacing(8)
+	for row, rowAssets := range assetsByRow(allAssets) {
+		for col, asset := range rowAssets {
 			price, _ := getPrice(asset)
 			{
 				label := qt.NewQLabel3(asset.Name)
 				label.SetAlignment(qt.AlignCenter)
 				label.SetFont(font)
 				label.SetStyleSheet("color: white;")
-				colLayout.AddWidget(label.QWidget)
+				mainLayout.AddWidget2(label.QWidget, row*3, col)
 			}
-			rowLayout.AddSpacing(10)
 			{
 				label := qt.NewQLabel3(asset.FormatPrice(price))
 				label.SetAlignment(qt.AlignCenter)
 				label.SetFont(font)
 				label.SetStyleSheet("color: white;")
-				colLayout.AddWidget(label.QWidget)
+				mainLayout.AddWidget2(label.QWidget, row*3+1, col)
 				priceLabels[asset.ID] = label
 			}
-			rowLayout.AddLayout(colLayout.QLayout)
-			rowLayout.AddStretch()
+			mainLayout.AddWidget2(qt.NewQLabel2().QWidget, row*3+2, 0)
 		}
 	}
 

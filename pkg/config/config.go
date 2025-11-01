@@ -24,6 +24,9 @@ func Dir() string {
 type Config struct {
 	TextSize int `toml:"text_size"`
 
+	GridSpacing   int `toml:"grid_spacing"`
+	WindowMargins int `toml:"window_margins"`
+
 	RefreshIntervalSeconds int `toml:"refresh_interval_seconds"`
 
 	BypassWindowManager bool `toml:"bypass_window_manager"`
@@ -34,6 +37,8 @@ type Config struct {
 func Load() *Config {
 	conf := &Config{
 		TextSize:               24,
+		GridSpacing:            10,
+		WindowMargins:          15,
 		RefreshIntervalSeconds: 15 * 60,
 		Assets: []*asset.Asset{
 			{
