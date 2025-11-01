@@ -19,6 +19,7 @@ func IdMap(assets []*Asset) map[string]struct{} {
 // For cryptocurrency: "", "coin", "crypto", "coingecko"
 
 type Asset struct {
+	Row    int    `toml:"row"`
 	Name   string `toml:"name"`
 	ID     string `toml:"id"`
 	Type   string `toml:"type"`

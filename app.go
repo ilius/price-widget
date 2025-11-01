@@ -14,6 +14,20 @@ import (
 
 const letfOrMiddleButton = qt.LeftButton | qt.MiddleButton
 
+func assetsByRow(assets []*asset.Asset) [][]*asset.Asset {
+	maxRow := 0
+	for _, asset := range assets {
+		if asset.Row > maxRow {
+			maxRow = asset.Row
+		}
+	}
+	table := make([][]*asset.Asset, maxRow+1)
+	for _, asset := range assets {
+		table[asset.Row] = append(table[asset.Row], asset)
+	}
+	return table
+}
+
 func Run() {
 	qt.NewQApplication(os.Args)
 
@@ -60,11 +74,6 @@ func Run() {
 
 	window.SetStyleSheet("background-color: black;")
 
-	// Layout setup
-	rootLayout := qt.NewQHBoxLayout2()
-	rootLayout.SetSpacing(30)
-	rootLayout.SetContentsMargins(20, 20, 20, 20)
-
 	cryptoManager.Init()
 	metalManager.Init()
 
@@ -74,29 +83,43 @@ func Run() {
 	}
 
 	priceLabels := map[string]*qt.QLabel{}
-	for _, asset := range allAssets {
-		colLayout := qt.NewQVBoxLayout2()
-		colLayout.SetSpacing(8)
-		price, _ := getPrice(asset)
-		{
-			label := qt.NewQLabel3(asset.Name)
-			label.SetAlignment(qt.AlignCenter)
-			label.SetFont(font)
-			label.SetStyleSheet("color: white;")
-			colLayout.AddWidget(label.QWidget)
+
+	mainLayout := qt.NewQVBoxLayout2()
+	mainLayout.SetSpacing(30)
+	mainLayout.SetContentsMargins(20, 20, 20, 20)
+
+	for _, rowAssets := range assetsByRow(allAssets) {
+		rowLayout := qt.NewQHBoxLayout2()
+		rowLayout.SetSpacing(30)
+		rowLayout.SetContentsMargins(0, 0, 0, 0)
+		mainLayout.AddLayout(rowLayout.Layout())
+		for _, asset := range rowAssets {
+			colLayout := qt.NewQVBoxLayout2()
+			colLayout.SetSpacing(8)
+			price, _ := getPrice(asset)
+			{
+				label := qt.NewQLabel3(asset.Name)
+				label.SetAlignment(qt.AlignCenter)
+				label.SetFont(font)
+				label.SetStyleSheet("color: white;")
+				colLayout.AddWidget(label.QWidget)
+			}
+			rowLayout.AddSpacing(10)
+			{
+				label := qt.NewQLabel3(asset.FormatPrice(price))
+				label.SetAlignment(qt.AlignCenter)
+				label.SetFont(font)
+				label.SetStyleSheet("color: white;")
+				colLayout.AddWidget(label.QWidget)
+				priceLabels[asset.ID] = label
+			}
+			rowLayout.AddLayout(colLayout.QLayout)
+			rowLayout.AddStretch()
 		}
-		rootLayout.AddSpacing(10)
-		{
-			label := qt.NewQLabel3(asset.FormatPrice(price))
-			label.SetAlignment(qt.AlignCenter)
-			label.SetFont(font)
-			label.SetStyleSheet("color: white;")
-			colLayout.AddWidget(label.QWidget)
-			priceLabels[asset.ID] = label
-		}
-		rootLayout.AddLayout(colLayout.QLayout)
-		rootLayout.AddStretch()
 	}
+
+	window.SetLayout(mainLayout.QLayout)
+	window.Resize(len(allAssets)*100, 1)
 
 	showPrice := func(asset *asset.Asset, price float64) {
 		label := priceLabels[asset.ID]
@@ -105,9 +128,6 @@ func Run() {
 
 	go cryptoManager.FetchLoop(showPrice)
 	go metalManager.FetchLoop(showPrice)
-
-	window.SetLayout(rootLayout.QLayout)
-	window.Resize(len(allAssets)*100, 1)
 
 	// --- Make it draggable ---
 	var dragRelativePos *qt.QPoint
